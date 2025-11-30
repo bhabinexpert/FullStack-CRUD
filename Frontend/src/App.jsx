@@ -1,6 +1,6 @@
-import NavBar from '../components/Navbar'
-import TableList from '../components/Tablelist'
-import ModalForm from '../components/ModalForm'
+import NavBar from './components/Navbar'
+import TableList from './components/Tablelist'
+import ModalForm from './components/ModalForm'
 import './App.css'
 import { useState } from 'react'
 

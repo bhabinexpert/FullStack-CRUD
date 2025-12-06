@@ -37,3 +37,21 @@ export const updateClient = async (clientData, clientId) => {
     );
     return rows[0];
 };
+
+export const deleteClient = async (clientId) => {
+    const { rowCount } = await query(
+        `DELETE FROM client WHERE id = $1`,
+        [clientId ]
+    );
+        return rowCount > 0; // returns true if the row is deleted, false otherwise
+
+};
+
+export const searchClient = async (searchTerm) => {
+    const { rows } = await query(
+        `SELECT * FROM client WHERE name ILIKE $1 OR email ILIKE $1`,
+        [`%${searchTerm}%`]
+    );
+        return rows;
+
+};

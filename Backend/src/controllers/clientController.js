@@ -5,7 +5,7 @@ export const getClients = async(req, res)=>{
         const clients = await clientServices.getClients();
         res.status(200).json(clients);
     } catch (error) {
-        console.error("Error updating client:", error);
+        console.error("Error fetching client:", error);
         res.status(500).json({message: "internal server error"})
         
     }
@@ -40,8 +40,33 @@ export const updateClients = async(req, res)=>{
 
 
     } catch (error) {
-        console.error("Error fetching client:", error);
+        console.error("Error updating client:", error);
         res.status(500).json({message: "internal server error"})
         
+    }
+}
+
+export const deleteClients = async(req, res) =>{
+    try {
+        const client = req.params.id;
+        const deleted = await clientServices.deleteClient(client);
+        if(!deleted){
+            return res.status(400).json({message : "Client not found.."});
+        }
+        res.status(200).json({message: "Client deleted Successfully..."});
+    } catch (error) {
+        console.error("Error deleting client:", error);
+        res.status(500).json({message: "internal server error"})
+    }
+}
+
+export const searchClients = async(req, res) =>{
+    try {
+        const searchTerm = req.query.q; // get the serch term form the query parameter
+        const clients = await clientServices.searchClient(searchTerm)
+        res.status(200).json(clients)
+    } catch (error) {
+        console.error("Error Searching client:", error);
+        res.status(500).json({message: "internal server error"})
     }
 }

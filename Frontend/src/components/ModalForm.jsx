@@ -1,22 +1,53 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export default function ModalForm({ isOpen, onClose, mode,}) {
-    const [rate, setRate] = useState('');
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [job, setJob] = useState('');
-    const [status, setStatus] = useState(false);
+const emptyForm = {
+  name: "",
+  email: "",
+  job: "",
+  rate: "",
+  isActive: false,
+};
 
-    const handleStatusChange = (e)=>{
-        setStatus(e.target.value === 'Active');
-        
+export default function ModalForm({ isOpen, onClose, mode, clientData, onSubmit }) {
+  const [formState, setFormState] = useState(emptyForm);
 
+  const defaultValues = useMemo(() => {
+    if (!isOpen) {
+      return { ...emptyForm };
     }
-    
-    const handelSubmit = (e)=>{
-        e.preventDefault();
-        onClose();
+    return {
+      name: clientData?.name ?? "",
+      email: clientData?.email ?? "",
+      job: clientData?.job ?? "",
+      rate: clientData?.rate != null ? String(clientData.rate) : "",
+      isActive: Boolean(clientData?.isActive ?? clientData?.isactive),
+    };
+  }, [isOpen, clientData]);
+
+  useEffect(() => {
+    setFormState(defaultValues);
+  }, [defaultValues]);
+
+  const handleChange = (field) => (event) => {
+    const value = field === "isActive"
+      ? event.target.value === "Active"
+      : event.target.value;
+    setFormState((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const payload = {
+      ...formState,
+      rate: formState.rate === "" ? null : Number(formState.rate),
+    };
+
+    try {
+      await onSubmit?.(payload);
+    } catch (error) {
+      console.error("Error saving client", error);
     }
+  };
 
   return (
     <>
@@ -25,25 +56,53 @@ export default function ModalForm({ isOpen, onClose, mode,}) {
           <h3 className="font-bold text-lg py-4">
             {mode === "edit" ? `Edit Client` : `Client Details`}
           </h3>
-          <form method="dialog" onSubmit={handelSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <label className="input input-bordered flex items-center gap-10 w-full">
               Name
-              <input type="text" className="grow" value={name} onChange={(e)=> setName(e.target.value)}  placeholder="" />
+              <input
+                type="text"
+                className="grow"
+                value={formState.name}
+                onChange={handleChange("name")}
+                placeholder=""
+              />
             </label>
             <label className="input input-bordered flex items-center gap-10 w-full">
               Email
-              <input type="text" className="grow" value={email} onChange={(e)=> setEmail(e.target.value)}placeholder="" />
+              <input
+                type="text"
+                className="grow"
+                value={formState.email}
+                onChange={handleChange("email")}
+                placeholder=""
+              />
             </label>
             <label className="input input-bordered flex items-center gap-10 w-full">
               Job
-              <input type="text" className="grow" value={job} onChange={(e)=> setJob(e.target.value)}placeholder="" />
+              <input
+                type="text"
+                className="grow"
+                value={formState.job}
+                onChange={handleChange("job")}
+                placeholder=""
+              />
             </label>
             <div className="flex gap-4">
               <label className="input input-bordered flex items-center gap-10">
                 Rate
-                <input type="number" className="grow" value={rate} onChange={(e)=> setRate(e.target.value)}placeholder="" />
+                <input
+                  type="number"
+                  className="grow"
+                  value={formState.rate}
+                  onChange={handleChange("rate")}
+                  placeholder=""
+                />
               </label>
-              <select value={status? 'Active': 'Inactive'} className="select select-bordered w-full max-w-xs"onChange={handleStatusChange}>
+              <select
+                value={formState.isActive ? "Active" : "Inactive"}
+                className="select select-bordered w-full max-w-xs"
+                onChange={handleChange("isActive")}
+              >
                 <option>Inactive</option>
                 <option>Active</option>
               </select>
